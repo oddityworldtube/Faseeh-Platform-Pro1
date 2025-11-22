@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { ContentType, Quiz, QuizConfig, SummaryPoint, QuestionType, Flashcard, DifficultyLevel, QuizResult } from "../types";
 
@@ -34,15 +33,37 @@ export const processContentToFusha = async (
       }
   }
 
+  // ====== التعديل: هيكلية الدرس المنهجية الاحترافية ======
   const baseInstruction = `
-    أنت مصمم تعليمي ومحرر محتوى محترف.
-    المهمة: تحويل المحتوى المدخل إلى درس تعليمي تفاعلي وجذاب بصرياً.
-    قواعد الهيكلة والتصميم:
-    1. العناوين الكبيرة: (#) للرئيسي و (##) للفرعي.
-    2. الجداول: ضرورية للمقارنات والبيانات.
-    3. البطاقات: استخدم Blockquote للمفاهيم الهامة.
-    4. التنسيق: استخدم الخط العريض والقوائم.
+    أنت مصمم تعليمي ومحرر محتوى محترف (Instructional Designer) متخصص في المناهج العربية.
+    المهمة: تحويل المحتوى إلى درس تعليمي متكامل، مُنظم وفقاً للهيكلية المنهجية القياسية (Lesson Plan Structure) باللغة العربية الفصحى الجذابة.
+    
+    **قواعد الهيكلة المنهجية (الالتزام بالترتيب والعمق):**
+    
+    # 1. الأهداف التعليمية (Learning Objectives)
+    *   صغ 3-5 أهداف محددة وقابلة للقياس (باستخدام أفعال مثل 'أن يعرف الطالب'، 'أن يحلل الطالب').
+
+    # 2. المقدمة والتحفيز (Engagement & Hook)
+    *   ابدأ بقضية واقعية أو قصة قصيرة تحفيزية ذات صلة بالدرس.
+    *   اطرح سؤالاً تمهيدياً يربط الدرس بالمعرفة السابقة للطالب.
+
+    # 3. الشرح والتحليل المفصل (Detailed Instruction & Elaboration)
+    *   قسم الشرح إلى عناوين فرعية رئيسية (##) متسلسلة منطقياً.
+    *   قدم تفسيرات عميقة، لا مجرد تعريفات سطحية.
+    *   **أمثلة وتطبيق:** أدرج أمثلة عملية ومخططات مفاهيمية مبسطة حيثما أمكن.
+
+    # 4. الأنشطة والتطبيق العملي (Application & Assessment Preparation)
+    *   ضمّن قسماً للأسئلة المباشرة أو تمارين 'فكر وحل' داخل سياق الشرح.
+
+    # 5. الخلاصة والمراجعة (Consolidation & Summary)
+    *   لخص المفاهيم والقواعد الرئيسية التي وردت في الدرس.
+    
+    **قواعد التنسيق والتصميم:**
+    *   **البطاقات:** استخدم Blockquote (الاقتباس) للمفاهيم الهامة، القوانين، أو الملاحظات التي يجب حفظها.
+    *   **الجداول:** ضرورية للمقارنات والبيانات.
+    *   **الخط العريض:** استخدمه لتسليط الضوء على المصطلحات الأساسية فقط.
   `;
+  // =======================================================
   
   const globalInstructionBlock = `
     **توجيهات هامة:**
@@ -61,16 +82,23 @@ export const processContentToFusha = async (
       const finalCustom = customInstructions || topicData.customInstructions || '';
       const finalNegative = negativeInstructions || topicData.negativeInstructions || '';
 
+      // ====== التعديل: برومبت إنشاء الدرس من الصفر ======
       userPrompt = `
-        أنشئ درس تعليمي شامل من الصفر:
+        **الطلب:** أنشئ درساً تعليمياً احترافياً ومفصلاً بالكامل (Lesson Plan) من الصفر، ملتزماً بـ "قواعد الهيكلة المنهجية" المذكورة في التعليمات الأساسية.
+        
+        **معلومات السياق المنهجي:**
         - العنوان: ${topicData.lessonName}
         - المادة: ${topicData.subject}
-        - الصف: ${topicData.gradeLevel}
-        - المنهج: ${topicData.curriculum}
+        - الصف/المستوى: ${topicData.gradeLevel}
+        - المنهج/النظام التعليمي: ${topicData.curriculum}
         
+        **توجيه الجودة:** يجب أن يكون الدرس عميقاً وشاملاً ويغطي الموضوع بالكامل وفقاً للمعايير الأكاديمية المطلوبة للصف والمادة المحددين.
+
         ${finalCustom}
         ${finalNegative}
       `;
+      // =======================================================
+
   } else if (type === ContentType.YOUTUBE && typeof actualData === 'string' && actualData.startsWith('http')) {
      userPrompt = `
        رابط فيديو يوتيوب: ${actualData}
@@ -132,9 +160,10 @@ export const generateSummary = async (text: string, config: { apiKey?: string; m
     }
   };
 
+  // تمت إضافة توجيه للنموذج ليلخص نقاط الخلاصة الرئيسية (Phase 5)
   const response = await ai.models.generateContent({
     model: config.model,
-    contents: `لخص الدرس في نقاط رئيسية (Term + Explanation). النص: ${text.substring(0, 20000)}`,
+    contents: `لخص الدرس في نقاط رئيسية (Term + Explanation). ركز على المفاهيم والقواعد النهائية في الخلاصة. النص: ${text.substring(0, 20000)}`,
     config: { responseMimeType: "application/json", responseSchema: schema }
   });
 
